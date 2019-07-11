@@ -4,13 +4,12 @@ import time
 import os
 import atexit
 
+repos_filename = 'files/repos.json'
+credentials_filename = 'credentials.json'
 api_limiter = (60 ** 2) / 5001.0  # max possible requests per hour allowed by Authenticated API
-file_name = 'files/repos.json'
-credentials_file = 'credentials.json'
-
-access_token = 'b54f2b467f6b50145bee1b1c05b0395bf954db2f'
+last_crawled = 185000000
+crawl_goal = last_crawled + 20000
 repos_crawled = 0
-start_with = 185000000  # ensure we take new repos
 t = time.time()
 
 
@@ -20,17 +19,15 @@ class CrawlerException(Exception):
 
 def wait():
     global t
-    sleep = api_limiter - (time.time() - t)
-    print(sleep)
-    print(wait)
+    sleep = max(0, api_limiter - (time.time() - t))  # 0 delay as lower bound
     time.sleep(sleep)
     t = time.time()
 
 
 def close_file():
-    global repos_crawled
-    print(f'Stopping crawler after {repos_crawled} repos')
-    with open(file_name, 'a+') as file:
+    global last_crawled
+    print(f'Stopping crawler after repo {last_crawled}.')
+    with open(repos_filename, 'a+') as file:
         file.write('\n]')
 
 
@@ -57,35 +54,22 @@ def retrieve_commits(name):
 
 
 def crawl_repos():
+    global last_crawled
     global repos_crawled
-    global basicAuthCredentials
-    crawl_goal = 20000  # would run for 4 hours
 
-    try:
-        os.mkdir('files')
-    except OSError:
-        pass
-
-    with open(file_name, 'w') as file:
+    with open(repos_filename, 'w') as file:
         file.write('[\n')
 
-    with open(credentials_file, 'r') as cred:
-        credentials = json.load(cred)
-        username = credentials['username']
-        password = credentials['password']
-        if not username or not password:
-            print('Please enter your GitHub credentials in the file credentials.json to start crawling.')
-            exit()
-        basicAuthCredentials = (username, password)
-
     t = time.time()
-    while repos_crawled < crawl_goal:
+    while last_crawled < crawl_goal:
         try:
-            wait()
-            repos = retrieve_repo(start_with + repos_crawled)
-            for name in list(map(lambda repo: repo['full_name'], repos)):
-                print(f'Retrieving repo {name} ...')
+            print(f'\nRetrieving repos since {last_crawled}')
+            repos = retrieve_repo(last_crawled)
+            for name, ident in list(map(lambda repo: (repo['full_name'], repo['id']), repos)):
+
+                print(f'>>> {ident} - {name}')
                 repos_crawled += 1
+                last_crawled = ident
 
                 wait()
                 langs = retrieve_languages(name)
@@ -96,17 +80,32 @@ def crawl_repos():
                 repo_dict = {'repository': name,
                              'languages': langs,
                              'commits': commits}
-                with open(file_name, 'a+', encoding='utf8') as file:
+                with open(repos_filename, 'a+', encoding='utf8') as file:
                     if repos_crawled > 1:
                         file.write(',\n')
                     file.write(json.dumps(repo_dict, ensure_ascii=False))
-            time.sleep(wait)
+            wait()
         except CrawlerException as e:
             repos_crawled += 1
             print(e)
 
 
 def main():
+    global basicAuthCredentials
+    try:
+        os.mkdir('files')
+    except OSError:
+        pass
+
+    with open(credentials_filename, 'r') as cred:
+        credentials = json.load(cred)
+        username = credentials['username']
+        password = credentials['password']
+        if not username or not password:
+            print('Please enter your GitHub credentials in the file credentials.json to start crawling.')
+            exit()
+        basicAuthCredentials = (username, password)
+
     atexit.register(close_file)
     crawl_repos()
 
