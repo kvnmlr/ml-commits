@@ -1,6 +1,6 @@
 # Machine Learning: Commits
 
-Just trying to learn patterns in commit messages that can be linked to programming languages.
+Predicting the main programming language of actual repositories on GitHub purely based on the contents of the commit messages using supervised text learning.
 
 ## Install:
 1. Install Python3
