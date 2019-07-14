@@ -2,6 +2,9 @@
 
 Predicting the main programming language of actual repositories on GitHub purely based on the contents of the commit messages using supervised text learning.
 
+## Limitations:
+Predictions are currently made on the commit level and not on the repository level. I will implement this in the future and also try out some other classification algorithms.
+
 ## Install:
 1. Install Python3
 2. Clone repository
