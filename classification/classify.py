@@ -3,10 +3,10 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
 
-with open('files/features.json', encoding='utf8') as file:
+with open('../files/features.json', encoding='utf8') as file:
     features = json.load(file)
 
-with open('files/labels.json', encoding='utf8') as file:
+with open('../files/labels.json', encoding='utf8') as file:
     labels = json.load(file)
 
 # transform labels into numerical categories (e.g. Java => 1, Python => 2)

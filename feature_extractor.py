@@ -26,8 +26,6 @@ def process_commits(commits):
         commit = commit.replace('/', ' ').replace('/', ' ').replace('\\', ' ').replace('.', ' ').replace('#', '')
         if len(commit) < 5 or len(commit) > 20:
             continue  # don't include very short commit messages
-
-        print(commit)
         good_commits.append(commit)
     return good_commits
 
@@ -48,8 +46,6 @@ def get_relevant_langs(languages):
             max_val = num
     for lang in languages.keys():
         if languages[lang] >= max_val:
-            if lang in ["JavaScript", "HTML", "CSS"]:
-                lang = "Web"
             relevant_languages.append(lang)
     return relevant_languages
 
