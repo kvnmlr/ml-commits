@@ -6,8 +6,8 @@ import atexit
 
 repos_filename = 'files/repos.json'
 credentials_filename = 'credentials.json'
-api_limiter = (60 ** 2) / 5001.0  # max possible requests per hour allowed by Authenticated API
-last_crawled = 185000000
+api_limiter = (60 ** 2) / 5000.0  # max possible requests per hour allowed by Authenticated API
+last_crawled = 188000000
 crawl_goal = last_crawled + 20000
 repos_crawled = 0
 t = time.time()
